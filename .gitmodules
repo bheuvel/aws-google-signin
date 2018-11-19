@@ -1,0 +1,4 @@
+[submodule "aws-google-oauth2-example"]
+	path = aws-google-oauth2-example
+	url = https://github.com/bheuvel/aws-google-oauth2-example.git
+	branch = aws-google-terraform
