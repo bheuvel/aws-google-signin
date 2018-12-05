@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Google Signin
+
+Parameters:
+  AuthenticationDomain:
+    Description: Route53 Hosted Zone
+    Type: String
+    Default: aws.exempligratia.cloud
+  AuthenticationHost:
+    Description: Signin host
+    Type: String
+    Default: signin
+
+Resources:
+  s3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: PublicRead
+      BucketName:
+        'Fn::Sub':
+          - '${Host}.${Domain}'
+          - Host:
+              Ref: AuthenticationHost
+            Domain:
+              Ref: AuthenticationDomain
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+ 
+  route53alias:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      Name:
+        'Fn::Sub':
+          - '${Host}.${Domain}'
+          - Host:
+              Ref: AuthenticationHost
+            Domain:
+              Ref: AuthenticationDomain
+      HostedZoneName:
+        'Fn::Sub':
+          - '${Domain}.'
+          - Domain:
+              Ref: AuthenticationDomain
+      Type: A
+      TTL: '60'
+      AliasTarget:
+        DNSName:
+          'Fn::FindInMap':
+            - S3HostingZoneMap
+            - Ref: 'AWS::Region'
+            - S3HostingEndpoint
+        HostedZoneId:
+          'Fn::FindInMap':
+            - S3HostingZoneMap
+            - Ref: 'AWS::Region'
+            - S3HostingZone
+    DependsOn:
+      - s3Bucket
+
+Outputs:
+  WebsiteURL:
+    Value:
+      'Fn::GetAtt':
+        - s3Bucket
+        - WebsiteURL
+    Description: URL for Website
+
+Mappings:
+  S3HostingZoneMap:
+    us-east-1:
+      S3HostingZone: Z3AQBSTGFYJSTF
+      S3HostingEndpoint: s3-website-us-east-1.amazonaws.com
+    us-east-2:
+      S3HostingZone: Z2O1EMRO9K5GLX
+      S3HostingEndpoint: s3-website.us-east-2.amazonaws.com
+    us-west-1:
+      S3HostingZone: Z2F56UZL2M1ACD
+      S3HostingEndpoint: s3-website-us-west-1.amazonaws.com
+    us-west-2:
+      S3HostingZone: Z3BJ6K6RIION7M
+      S3HostingEndpoint: s3-website-us-west-2.amazonaws.com
+    ca-central-1:
+      S3HostingZone: Z1QDHH18159H29
+      S3HostingEndpoint: s3-website.ca-central-1.amazonaws.com
+    ap-south-1:
+      S3HostingZone: Z11RGJOFQNVJUP
+      S3HostingEndpoint: s3-website.ap-south-1.amazonaws.com
+    ap-northeast-1:
+      S3HostingZone: Z2M4EHUR26P7ZW
+      S3HostingEndpoint: s3-website-ap-northeast-1.amazonaws.com
+    ap-northeast-2:
+      S3HostingZone: Z3W03O7B5YMIYP
+      S3HostingEndpoint: s3-website.ap-northeast-2.amazonaws.com
+    ap-southeast-1:
+      S3HostingZone: Z3O0J2DXBE1FTB
+      S3HostingEndpoint: s3-website-ap-southeast-1.amazonaws.com
+    ap-southeast-2:
+      S3HostingZone: Z1WCIGYICN2BYD
+      S3HostingEndpoint: s3-website-ap-southeast-2.amazonaws.com
+    eu-central-1:
+      S3HostingZone: Z21DNDUVLTQW6Q
+      S3HostingEndpoint: s3-website.eu-central-1.amazonaws.com
+    eu-west-1:
+      S3HostingZone: Z1BKCTXD74EZPE
+      S3HostingEndpoint: s3-website-eu-west-1.amazonaws.com
+    eu-west-2:
+      S3HostingZone: Z3GKZC51ZF0DB4
+      S3HostingEndpoint: s3-website.eu-west-2.amazonaws.com
+    sa-east-1:
+      S3HostingZone: Z31GFT0UA1I2HV
+      S3HostingEndpoint: s3-website-sa-east-1.amazonaws.com
